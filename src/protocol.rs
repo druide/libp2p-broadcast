@@ -1,10 +1,11 @@
 use futures::future::BoxFuture;
 use futures::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
-use libp2p::core::{upgrade, InboundUpgrade, OutboundUpgrade, UpgradeInfo};
+use libp2p::core::{InboundUpgrade, OutboundUpgrade, UpgradeInfo};
 use std::io::{Error, ErrorKind, Result};
 use std::sync::Arc;
+use crate::upgrade;
 
-const PROTOCOL_INFO: &[u8] = b"/ax/broadcast/1.0.0";
+const PROTOCOL_INFO: &str = "/ax/broadcast/1.0.0";
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Topic {
@@ -39,7 +40,7 @@ impl AsRef<[u8]> for Topic {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Message {
     Subscribe(Topic),
     Broadcast(Topic, Arc<[u8]>),
@@ -112,7 +113,7 @@ impl Default for BroadcastConfig {
 }
 
 impl UpgradeInfo for BroadcastConfig {
-    type Info = &'static [u8];
+    type Info = &'static str;
     type InfoIter = std::iter::Once<Self::Info>;
 
     fn protocol_info(&self) -> Self::InfoIter {
@@ -139,7 +140,7 @@ where
 }
 
 impl UpgradeInfo for Message {
-    type Info = &'static [u8];
+    type Info = &'static str;
     type InfoIter = std::iter::Once<Self::Info>;
 
     fn protocol_info(&self) -> Self::InfoIter {
